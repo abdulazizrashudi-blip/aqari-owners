@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ملاك العقارات — عقاري</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="https://abdulazizrashudi-blip.github.io/" class="brand">
+      <span class="logo-badge">🏠</span>
+      عقاري
+    </a>
+    <nav class="main-nav">
+      <a href="https://abdulazizrashudi-blip.github.io/">الرئيسية</a>
+      <a href="https://abdulazizrashudi-blip.github.io/aqari-dashboard/">لوحة التحكم</a>
+      <a href="https://abdulazizrashudi-blip.github.io/aqari-owners/" class="active">ملاك العقارات</a>
+    </nav>
+  </div>
+</header>
+
+<main class="section">
+  <div class="section-head">
+    <h2>ملاك العقارات</h2>
+    <span class="count" id="owners-count"></span>
+  </div>
+
+  <div class="notice">
+    ⚠️ <div>هذه الصفحة تجريبية: تسجيل مالك جديد يُحفظ داخل متصفحك فقط (localStorage) ولا يتطلب تسجيل دخول حقيقي حاليًا.</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h3>تسجيل مالك عقار جديد</h3>
+    </div>
+    <form id="owner-form">
+      <div class="form-grid">
+        <div class="field">
+          <label>الاسم الكامل</label>
+          <input type="text" id="o-name" required placeholder="مثال: سعود المطيري">
+        </div>
+        <div class="field">
+          <label>رقم الجوال</label>
+          <input type="text" id="o-phone" required placeholder="9665xxxxxxxx+">
+        </div>
+        <div class="field">
+          <label>البريد الإلكتروني</label>
+          <input type="email" id="o-email" placeholder="example@email.com">
+        </div>
+      </div>
+      <div style="margin-top:16px;">
+        <button type="submit" class="btn btn-primary">تسجيل كمالك</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="grid" id="owners-grid"></div>
+</main>
+
+<footer class="site-footer">
+  <div><strong>عقاري</strong> — منصة تجريبية لعرض العقارات</div>
+  <div>هذا موقع عرض (Demo) والبيانات تُحفظ محليًا في متصفحك فقط</div>
+</footer>
+
+<script src="app.js"></script>
+<script>
+  const grid = document.getElementById('owners-grid');
+  const countEl = document.getElementById('owners-count');
+  const form = document.getElementById('owner-form');
+
+  function ownerCardHTML(o) {
+    const props = getProperties().filter(p => p.ownerId === o.id);
+    const initials = o.name.trim().split(' ').slice(0, 2).map(w => w[0]).join('');
+    return `
+      <div class="owner-card">
+        <div class="owner-top">
+          <div class="owner-avatar">${initials}</div>
+          <div>
+            <div class="owner-name">${o.name}</div>
+            <div class="owner-sub">${props.length} عقار مسجل</div>
+          </div>
+        </div>
+        <div class="owner-contact">
+          <span>📞 ${o.phone || '—'}</span>
+          <span>✉️ ${o.email || '—'}</span>
+        </div>
+        ${props.length ? `<div class="owner-props">${props.map(p => p.title).join('، ')}</div>` : ''}
+        <div class="owner-foot">
+          <a href="https://abdulazizrashudi-blip.github.io/" class="btn btn-outline" style="font-size:12.5px; padding:7px 12px;">عرض العقارات</a>
+          <button class="btn btn-danger" style="font-size:12.5px; padding:7px 12px;" data-del="${o.id}">حذف</button>
+        </div>
+      </div>`;
+  }
+
+  function refresh() {
+    const owners = getOwners();
+    countEl.textContent = `${owners.length} مالك`;
+    if (!owners.length) {
+      grid.innerHTML = `<div class="empty-state"><div class="ic">👤</div><div>ما فيه ملاك مسجلين بعد</div></div>`;
+      return;
+    }
+    grid.innerHTML = owners.map(ownerCardHTML).join('');
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const name = document.getElementById('o-name').value.trim();
+    const phone = document.getElementById('o-phone').value.trim();
+    const email = document.getElementById('o-email').value.trim();
+    if (!name || !phone) return;
+    const owners = getOwners();
+    owners.unshift({ id: uid('o'), name, phone, email });
+    saveOwners(owners);
+    form.reset();
+    refresh();
+  });
+
+  grid.addEventListener('click', function (e) {
+    const delId = e.target.getAttribute('data-del');
+    if (!delId) return;
+    const linked = getProperties().filter(p => p.ownerId === delId).length;
+    if (linked > 0 && !confirm(`هذا المالك مرتبط بـ ${linked} عقار، هل تبي تحذفه مع بقاء عقاراته بدون مالك محدد؟`)) return;
+    saveOwners(getOwners().filter(o => o.id !== delId));
+    refresh();
+  });
+
+  refresh();
+</script>
+</body>
+</html>
