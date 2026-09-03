@@ -23,56 +23,312 @@
 </header>
 
 <main class="section">
-  <div class="section-head">
-    <h2>ملاك العقارات</h2>
-    <span class="count" id="owners-count"></span>
-  </div>
 
-  <div class="notice">
-    ⚠️ <div>هذه الصفحة تجريبية: تسجيل مالك جديد يُحفظ داخل متصفحك فقط (localStorage) ولا يتطلب تسجيل دخول حقيقي حاليًا.</div>
-  </div>
-
-  <div class="panel">
+  <!-- تسجيل دخول المالك -->
+  <div class="panel" id="owner-login-panel">
     <div class="panel-head">
-      <h3>تسجيل مالك عقار جديد</h3>
+      <h3>دخول الملاك</h3>
     </div>
-    <form id="owner-form">
-      <div class="form-grid">
-        <div class="field">
-          <label>الاسم الكامل</label>
-          <input type="text" id="o-name" required placeholder="مثال: سعود المطيري">
-        </div>
-        <div class="field">
-          <label>رقم الجوال</label>
-          <input type="text" id="o-phone" required placeholder="9665xxxxxxxx+">
-        </div>
-        <div class="field">
-          <label>البريد الإلكتروني</label>
-          <input type="email" id="o-email" placeholder="example@email.com">
-        </div>
+    <p style="color:var(--muted); font-size:13px; margin-bottom:16px;">
+      إذا عندك حساب مالك (استلمته من إدارة الموقع) سجّل دخولك هنا لإدارة عقاراتك الخاصة.
+    </p>
+    <div id="login-alert"></div>
+    <form id="login-form" class="form-grid">
+      <div class="field">
+        <label>اسم المستخدم</label>
+        <input type="text" id="l-username" required>
       </div>
-      <div style="margin-top:16px;">
-        <button type="submit" class="btn btn-primary">تسجيل كمالك</button>
+      <div class="field">
+        <label>كلمة المرور</label>
+        <input type="password" id="l-password" required>
+      </div>
+      <div class="field" style="align-self:flex-end;">
+        <button type="submit" class="btn btn-primary" id="login-btn">دخول</button>
       </div>
     </form>
   </div>
 
-  <div class="grid" id="owners-grid"></div>
+  <!-- لوحة المالك بعد الدخول -->
+  <div class="hidden" id="owner-panel-wrap">
+    <div class="user-bar">
+      <div class="who">
+        <span id="owner-name"></span>
+        <small>مسجّل دخول كمالك عقار</small>
+      </div>
+      <button class="btn btn-outline" id="logout-btn">تسجيل الخروج</button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h3 id="form-title">إضافة عقار جديد</h3>
+        <button class="btn btn-outline" id="cancel-edit" style="display:none">إلغاء التعديل</button>
+      </div>
+      <form id="property-form">
+        <input type="hidden" id="edit-id">
+        <div class="form-grid">
+          <div class="field full">
+            <label>عنوان العقار</label>
+            <input type="text" id="p-title" required placeholder="مثال: شقة عصرية بحي النرجس">
+          </div>
+          <div class="field">
+            <label>المدينة</label>
+            <select id="p-city" required></select>
+          </div>
+          <div class="field">
+            <label>نوع العقار</label>
+            <select id="p-type" required></select>
+          </div>
+          <div class="field">
+            <label>الحالة</label>
+            <select id="p-status" required>
+              <option value="sale">للبيع</option>
+              <option value="rent">للإيجار</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>السعر (ريال)</label>
+            <input type="number" id="p-price" required min="0" placeholder="0">
+          </div>
+          <div class="field">
+            <label>المساحة (م²)</label>
+            <input type="number" id="p-area" required min="0" placeholder="0">
+          </div>
+          <div class="field">
+            <label>عدد الغرف</label>
+            <input type="number" id="p-rooms" min="0" placeholder="0">
+          </div>
+        </div>
+        <div style="margin-top:16px; display:flex; gap:10px;">
+          <button type="submit" class="btn btn-primary" id="submit-btn">إضافة العقار</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h3>عقاراتي (<span id="table-count">0</span>)</h3>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>العقار</th>
+              <th>المدينة</th>
+              <th>النوع</th>
+              <th>الحالة</th>
+              <th>السعر</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="properties-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- دليل الملاك العام -->
+  <div class="section-head" style="margin-top:10px;">
+    <h2>دليل ملاك العقارات</h2>
+    <span class="count" id="owners-count"></span>
+  </div>
+  <div class="grid" id="owners-grid">
+    <div class="loading-state">⏳ جاري تحميل الملاك...</div>
+  </div>
 </main>
 
 <footer class="site-footer">
-  <div><strong>عقاري</strong> — منصة تجريبية لعرض العقارات</div>
-  <div>هذا موقع عرض (Demo) والبيانات تُحفظ محليًا في متصفحك فقط</div>
+  <div><strong>عقاري</strong> — منصة عقارية</div>
+  <div>البيانات محفوظة على قاعدة بيانات حقيقية (Firebase)</div>
 </footer>
 
 <script src="app.js"></script>
-<script>
-  const grid = document.getElementById('owners-grid');
-  const countEl = document.getElementById('owners-count');
-  const form = document.getElementById('owner-form');
+<script type="module">
+  import {
+    watchAuth, loginOwner, logout, getOwner,
+    getProperties, addProperty, updateProperty, deleteProperty, getOwners,
+  } from './firebase.js';
 
-  function ownerCardHTML(o) {
-    const props = getProperties().filter(p => p.ownerId === o.id);
+  const loginPanel = document.getElementById('owner-login-panel');
+  const loginForm = document.getElementById('login-form');
+  const loginAlert = document.getElementById('login-alert');
+  const loginBtn = document.getElementById('login-btn');
+  const ownerPanelWrap = document.getElementById('owner-panel-wrap');
+  const ownerNameEl = document.getElementById('owner-name');
+  const logoutBtn = document.getElementById('logout-btn');
+
+  const cityEl = document.getElementById('p-city');
+  const typeEl = document.getElementById('p-type');
+  const tbody = document.getElementById('properties-tbody');
+  const tableCount = document.getElementById('table-count');
+  const form = document.getElementById('property-form');
+  const editIdEl = document.getElementById('edit-id');
+  const formTitle = document.getElementById('form-title');
+  const submitBtn = document.getElementById('submit-btn');
+  const cancelEditBtn = document.getElementById('cancel-edit');
+
+  const ownersGrid = document.getElementById('owners-grid');
+  const ownersCountEl = document.getElementById('owners-count');
+
+  fillOptions(cityEl, CITIES, 'اختر المدينة');
+  fillOptions(typeEl, PROPERTY_TYPES, 'اختر النوع');
+
+  let currentUid = null;
+  let myProperties = [];
+
+  function showAlert(message, type) {
+    loginAlert.innerHTML = `<div class="alert ${type}">${type === 'error' ? '⚠️' : '✅'} <div>${message}</div></div>`;
+  }
+
+  // ---------------- تسجيل دخول المالك ----------------
+  loginForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    loginAlert.innerHTML = '';
+    const username = document.getElementById('l-username').value.trim();
+    const password = document.getElementById('l-password').value;
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'جاري الدخول...';
+    try {
+      await loginOwner(username, password);
+    } catch (err) {
+      showAlert('اسم المستخدم أو كلمة المرور غير صحيحة', 'error');
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'دخول';
+    }
+  });
+
+  logoutBtn.addEventListener('click', async function () {
+    await logout();
+  });
+
+  watchAuth(async function (user) {
+    if (!user) {
+      currentUid = null;
+      loginPanel.classList.remove('hidden');
+      ownerPanelWrap.classList.add('hidden');
+      return;
+    }
+    const owner = await getOwner(user.uid);
+    if (!owner) {
+      showAlert('هذا الحساب غير مسجّل كمالك عقار في النظام', 'error');
+      await logout();
+      return;
+    }
+    currentUid = user.uid;
+    loginPanel.classList.add('hidden');
+    ownerPanelWrap.classList.remove('hidden');
+    ownerNameEl.textContent = owner.name;
+    loadMyProperties();
+  });
+
+  // ---------------- عقارات المالك ----------------
+  async function loadMyProperties() {
+    try {
+      const all = await getProperties();
+      myProperties = all.filter(p => p.ownerId === currentUid);
+      renderTable();
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function renderTable() {
+    tableCount.textContent = myProperties.length;
+    if (!myProperties.length) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:30px;">ما عندك عقارات مضافة بعد</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = myProperties.map(p => `
+      <tr>
+        <td>${p.title}</td>
+        <td>${p.city}</td>
+        <td>${p.type}</td>
+        <td><span class="tag ${p.status === 'rent' ? 'rent' : 'sale'}">${p.status === 'rent' ? 'للإيجار' : 'للبيع'}</span></td>
+        <td>${formatPrice(p.price)} ر.س</td>
+        <td>
+          <div class="row-actions">
+            <button class="icon-btn" data-edit="${p.id}">تعديل</button>
+            <button class="icon-btn danger" data-del="${p.id}">حذف</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  function resetForm() {
+    form.reset();
+    editIdEl.value = '';
+    formTitle.textContent = 'إضافة عقار جديد';
+    submitBtn.textContent = 'إضافة العقار';
+    cancelEditBtn.style.display = 'none';
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    if (!currentUid) return;
+    const data = {
+      title: document.getElementById('p-title').value.trim(),
+      city: cityEl.value,
+      type: typeEl.value,
+      status: document.getElementById('p-status').value,
+      price: Number(document.getElementById('p-price').value || 0),
+      area: Number(document.getElementById('p-area').value || 0),
+      rooms: Number(document.getElementById('p-rooms').value || 0),
+      ownerId: currentUid,
+    };
+    if (!data.title || !data.city || !data.type) return;
+
+    submitBtn.disabled = true;
+    try {
+      if (editIdEl.value) {
+        await updateProperty(editIdEl.value, data);
+      } else {
+        await addProperty(data);
+      }
+      resetForm();
+      await loadMyProperties();
+    } catch (err) {
+      alert('حدث خطأ أثناء الحفظ، حاول مرة أخرى');
+      console.error(err);
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  cancelEditBtn.addEventListener('click', resetForm);
+
+  tbody.addEventListener('click', async function (e) {
+    const editId = e.target.getAttribute('data-edit');
+    const delId = e.target.getAttribute('data-del');
+    if (editId) {
+      const p = myProperties.find(x => x.id === editId);
+      if (!p) return;
+      editIdEl.value = p.id;
+      document.getElementById('p-title').value = p.title;
+      cityEl.value = p.city;
+      typeEl.value = p.type;
+      document.getElementById('p-status').value = p.status;
+      document.getElementById('p-price').value = p.price;
+      document.getElementById('p-area').value = p.area;
+      document.getElementById('p-rooms').value = p.rooms;
+      formTitle.textContent = 'تعديل العقار';
+      submitBtn.textContent = 'حفظ التعديلات';
+      cancelEditBtn.style.display = 'inline-block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    if (delId) {
+      if (!confirm('متأكد تبي تحذف هذا العقار؟')) return;
+      try {
+        await deleteProperty(delId);
+        await loadMyProperties();
+      } catch (err) {
+        alert('تعذّر حذف العقار');
+        console.error(err);
+      }
+    }
+  });
+
+  // ---------------- دليل الملاك العام ----------------
+  function ownerCardHTML(o, propsCount) {
     const initials = o.name.trim().split(' ').slice(0, 2).map(w => w[0]).join('');
     return `
       <div class="owner-card">
@@ -80,54 +336,37 @@
           <div class="owner-avatar">${initials}</div>
           <div>
             <div class="owner-name">${o.name}</div>
-            <div class="owner-sub">${props.length} عقار مسجل</div>
+            <div class="owner-sub">${propsCount} عقار مسجل</div>
           </div>
         </div>
         <div class="owner-contact">
           <span>📞 ${o.phone || '—'}</span>
-          <span>✉️ ${o.email || '—'}</span>
         </div>
-        ${props.length ? `<div class="owner-props">${props.map(p => p.title).join('، ')}</div>` : ''}
         <div class="owner-foot">
           <a href="https://abdulazizrashudi-blip.github.io/" class="btn btn-outline" style="font-size:12.5px; padding:7px 12px;">عرض العقارات</a>
-          <button class="btn btn-danger" style="font-size:12.5px; padding:7px 12px;" data-del="${o.id}">حذف</button>
         </div>
       </div>`;
   }
 
-  function refresh() {
-    const owners = getOwners();
-    countEl.textContent = `${owners.length} مالك`;
-    if (!owners.length) {
-      grid.innerHTML = `<div class="empty-state"><div class="ic">👤</div><div>ما فيه ملاك مسجلين بعد</div></div>`;
-      return;
+  async function loadOwnersDirectory() {
+    try {
+      const [owners, props] = await Promise.all([getOwners(), getProperties()]);
+      ownersCountEl.textContent = `${owners.length} مالك`;
+      if (!owners.length) {
+        ownersGrid.innerHTML = `<div class="empty-state"><div class="ic">👤</div><div>ما فيه ملاك مسجلين بعد</div></div>`;
+        return;
+      }
+      ownersGrid.innerHTML = owners.map(o => {
+        const count = props.filter(p => p.ownerId === o.id).length;
+        return ownerCardHTML(o, count);
+      }).join('');
+    } catch (err) {
+      ownersGrid.innerHTML = `<div class="empty-state"><div class="ic">⚠️</div><div>تعذّر تحميل الملاك</div></div>`;
+      console.error(err);
     }
-    grid.innerHTML = owners.map(ownerCardHTML).join('');
   }
 
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    const name = document.getElementById('o-name').value.trim();
-    const phone = document.getElementById('o-phone').value.trim();
-    const email = document.getElementById('o-email').value.trim();
-    if (!name || !phone) return;
-    const owners = getOwners();
-    owners.unshift({ id: uid('o'), name, phone, email });
-    saveOwners(owners);
-    form.reset();
-    refresh();
-  });
-
-  grid.addEventListener('click', function (e) {
-    const delId = e.target.getAttribute('data-del');
-    if (!delId) return;
-    const linked = getProperties().filter(p => p.ownerId === delId).length;
-    if (linked > 0 && !confirm(`هذا المالك مرتبط بـ ${linked} عقار، هل تبي تحذفه مع بقاء عقاراته بدون مالك محدد؟`)) return;
-    saveOwners(getOwners().filter(o => o.id !== delId));
-    refresh();
-  });
-
-  refresh();
+  loadOwnersDirectory();
 </script>
 </body>
 </html>
