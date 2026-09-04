@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ملاك العقارات — عقاري</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body>
 
@@ -118,17 +118,7 @@
             <input type="text" id="p-image" placeholder="https://...">
           </div>
           <div class="field">
-            <label>خط العرض Latitude (اختياري)</label>
-            <input type="number" id="p-lat" step="any" placeholder="مثال: 26.3260">
-          </div>
-          <div class="field">
-            <label>خط الطول Longitude (اختياري)</label>
-            <input type="number" id="p-lng" step="any" placeholder="مثال: 43.9750">
-          </div>
-        </div>
-        <p style="color:var(--muted); font-size:12px; margin-top:8px;">
-          عشان تجيب الإحداثيات: افتح موقع العقار في Google Maps، اضغط بزر الفأرة الأيمن على النقطة، وانسخ أول رقمين.
-        </p>
+            <label>خط العرض Latitude (اختياري)</label><input type="number" id="p-lat" step="any" placeholder="مثال: 26.3260"></div><div class="field"><label>خط الطول Longitude (اختياري)</label><input type="number" id="p-lng" step="any" placeholder="مثال: 43.9750"></div><div class="field full"><label>حدد موقع العقار على الخريطة (اختياري)</label><div id="p-map" style="height:280px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);cursor:crosshair;"></div></div></div><p style="color:var(--muted); font-size:12px; margin-top:8px;">اضغط على الخريطة لتحديد موقع العقار وتعبئة الإحداثيات تلقائيًا، وتقدر تسحب العلامة لضبط الموقع بدقة. أو أدخل الإحداثيات يدويًا لو تعرفها.</p>
         <div style="margin-top:16px; display:flex; gap:10px;">
           <button type="submit" class="btn btn-primary" id="submit-btn">إضافة العقار</button>
         </div>
@@ -172,7 +162,7 @@
   <div>البيانات محفوظة على قاعدة بيانات حقيقية (Firebase)</div>
 </footer>
 
-<script src="app.js"></script>
+<script src="app.js"></script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module">
   import {
     watchAuth, loginOwner, logout, getOwner,
@@ -198,7 +188,7 @@
   const descriptionEl = document.getElementById('p-description');
   const imageEl = document.getElementById('p-image');
   const latEl = document.getElementById('p-lat');
-  const lngEl = document.getElementById('p-lng');
+  const lngEl = document.getElementById('p-lng'); let pickerMap = null; let pickerMarker = null; const PICKER_DEFAULT_CENTER = [24.7136, 46.6753]; function initPickerMap() { const mapEl = document.getElementById('p-map'); if (!mapEl) return; if (pickerMap) { pickerMap.invalidateSize(); return; } pickerMap = L.map('p-map').setView(PICKER_DEFAULT_CENTER, 6); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(pickerMap); pickerMap.on('click', function (e) { setPickerLocation(e.latlng.lat, e.latlng.lng); }); const initLat = latEl.value.trim(); const initLng = lngEl.value.trim(); if (initLat !== '' && initLng !== '') { setPickerLocation(Number(initLat), Number(initLng), true); } } function setPickerLocation(lat, lng, skipInputs) { if (!pickerMap) return; if (pickerMarker) { pickerMarker.setLatLng([lat, lng]); } else { pickerMarker = L.marker([lat, lng], { draggable: true }).addTo(pickerMap); pickerMarker.on('dragend', function () { const pos = pickerMarker.getLatLng(); setPickerLocation(pos.lat, pos.lng); }); } pickerMap.setView([lat, lng], 13); if (!skipInputs) { latEl.value = lat.toFixed(6); lngEl.value = lng.toFixed(6); } } function clearPickerLocation() { if (pickerMarker && pickerMap) { pickerMap.removeLayer(pickerMarker); pickerMarker = null; } if (pickerMap) pickerMap.setView(PICKER_DEFAULT_CENTER, 6); } function syncPickerFromInputs() { const lat = parseFloat(latEl.value); const lng = parseFloat(lngEl.value); if (!isNaN(lat) && !isNaN(lng)) setPickerLocation(lat, lng, true); } latEl.addEventListener('change', syncPickerFromInputs); lngEl.addEventListener('change', syncPickerFromInputs);
   const tbody = document.getElementById('properties-tbody');
   const tableCount = document.getElementById('table-count');
   const form = document.getElementById('property-form');
@@ -257,9 +247,7 @@
     }
     currentUid = user.uid;
     loginPanel.classList.add('hidden');
-    ownerPanelWrap.classList.remove('hidden');
-    ownerNameEl.textContent = owner.name;
-    loadMyProperties();
+    ownerPanelWrap.classList.remove('hidden'); ownerNameEl.textContent = owner.name; loadMyProperties(); setTimeout(initPickerMap, 50);
   });
 
   // ---------------- عقارات المالك ----------------
@@ -295,13 +283,7 @@
       </tr>`).join('');
   }
 
-  function resetForm() {
-    form.reset();
-    editIdEl.value = '';
-    formTitle.textContent = 'إضافة عقار جديد';
-    submitBtn.textContent = 'إضافة العقار';
-    cancelEditBtn.style.display = 'none';
-  }
+  function resetForm() { form.reset(); editIdEl.value = ''; formTitle.textContent = 'إضافة عقار جديد'; submitBtn.textContent = 'إضافة العقار'; cancelEditBtn.style.display = 'none'; clearPickerLocation(); }
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -363,8 +345,7 @@
       roomsEl.value = p.rooms;
       descriptionEl.value = p.description || '';
       imageEl.value = p.imageUrl || '';
-      latEl.value = typeof p.lat === 'number' ? p.lat : '';
-      lngEl.value = typeof p.lng === 'number' ? p.lng : '';
+      latEl.value = typeof p.lat === 'number' ? p.lat : ''; lngEl.value = typeof p.lng === 'number' ? p.lng : ''; if (typeof p.lat === 'number' && typeof p.lng === 'number') { setPickerLocation(p.lat, p.lng, true); } else { clearPickerLocation(); }
       formTitle.textContent = 'تعديل العقار';
       submitBtn.textContent = 'حفظ التعديلات';
       cancelEditBtn.style.display = 'inline-block';
