@@ -83,6 +83,11 @@ export async function getProperties() {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
+export async function getProperty(id) {
+  const snap = await getDoc(doc(db, "properties", id));
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+
 export async function addProperty(data) {
   const id = "p_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   await setDoc(doc(db, "properties", id), { ...data, createdAt: Date.now() });
@@ -106,4 +111,48 @@ export async function getOwners() {
 export async function getOwner(uid) {
   const snap = await getDoc(doc(db, "owners", uid));
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+
+// ---------------- طلبات "اعرض عقارك" و"سجل طلبك العقاري" ----------------
+// أي زائر يقدر يرسلها (بدون تسجيل دخول)، وما يقدر يشوفها أو يحذفها غير الإدارة.
+export async function submitPropertyOffer(data) {
+  const id = "off_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  await setDoc(doc(db, "leads_offers", id), { ...data, createdAt: Date.now() });
+  return id;
+}
+
+export async function submitPropertyRequest(data) {
+  const id = "req_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  await setDoc(doc(db, "leads_requests", id), { ...data, createdAt: Date.now() });
+  return id;
+}
+
+export async function getLeadsOffers() {
+  const snap = await getDocs(query(collection(db, "leads_offers"), orderBy("createdAt", "desc")));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export async function getLeadsRequests() {
+  const snap = await getDocs(query(collection(db, "leads_requests"), orderBy("createdAt", "desc")));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+export async function deleteLeadOffer(id) {
+  await deleteDoc(doc(db, "leads_offers", id));
+}
+
+export async function deleteLeadRequest(id) {
+  await deleteDoc(doc(db, "leads_requests", id));
+}
+
+// ---------------- إحصائيات الثقة (الصفحة الرئيسية) ----------------
+const DEFAULT_STATS = { yearsExperience: 0, happyClients: 0, propertiesMarketed: 0 };
+
+export async function getStats() {
+  const snap = await getDoc(doc(db, "settings", "stats"));
+  return snap.exists() ? { ...DEFAULT_STATS, ...snap.data() } : DEFAULT_STATS;
+}
+
+export async function updateStats(data) {
+  await setDoc(doc(db, "settings", "stats"), data, { merge: true });
 }
