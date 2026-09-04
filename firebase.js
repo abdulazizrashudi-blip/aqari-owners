@@ -153,6 +153,4 @@ export async function getStats() {
   return snap.exists() ? { ...DEFAULT_STATS, ...snap.data() } : DEFAULT_STATS;
 }
 
-export async function updateStats(data) {
-  await setDoc(doc(db, "settings", "stats"), data, { merge: true });
-}
+export async function updateStats(data) { await setDoc(doc(db, "settings", "stats"), data, { merge: true }); } const DEFAULT_CONTACT = { whatsapp: '', phone: '', instagram: '', twitter: '', snapchat: '' }; export async function getContactInfo() { const snap = await getDoc(doc(db, "settings", "contact")); return snap.exists() ? { ...DEFAULT_CONTACT, ...snap.data() } : DEFAULT_CONTACT; } export async function updateContactInfo(data) { await setDoc(doc(db, "settings", "contact"), data, { merge: true }); }
