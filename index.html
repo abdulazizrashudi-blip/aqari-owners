@@ -75,6 +75,10 @@
             <select id="p-city" required></select>
           </div>
           <div class="field">
+            <label>الحي (اختياري)</label>
+            <input type="text" id="p-neighborhood" placeholder="مثال: النرجس">
+          </div>
+          <div class="field">
             <label>نوع العقار</label>
             <select id="p-type" required></select>
           </div>
@@ -83,6 +87,14 @@
             <select id="p-status" required>
               <option value="sale">للبيع</option>
               <option value="rent">للإيجار</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>مدة الإيجار (لو للإيجار)</label>
+            <select id="p-period">
+              <option value="">—</option>
+              <option value="monthly">شهري</option>
+              <option value="yearly">سنوي</option>
             </select>
           </div>
           <div class="field">
@@ -97,7 +109,26 @@
             <label>عدد الغرف</label>
             <input type="number" id="p-rooms" min="0" placeholder="0">
           </div>
+          <div class="field full">
+            <label>وصف تفصيلي (اختياري)</label>
+            <input type="text" id="p-description" placeholder="تفاصيل إضافية عن العقار تظهر بصفحته الخاصة">
+          </div>
+          <div class="field full">
+            <label>رابط صورة (اختياري)</label>
+            <input type="text" id="p-image" placeholder="https://...">
+          </div>
+          <div class="field">
+            <label>خط العرض Latitude (اختياري)</label>
+            <input type="number" id="p-lat" step="any" placeholder="مثال: 26.3260">
+          </div>
+          <div class="field">
+            <label>خط الطول Longitude (اختياري)</label>
+            <input type="number" id="p-lng" step="any" placeholder="مثال: 43.9750">
+          </div>
         </div>
+        <p style="color:var(--muted); font-size:12px; margin-top:8px;">
+          عشان تجيب الإحداثيات: افتح موقع العقار في Google Maps، اضغط بزر الفأرة الأيمن على النقطة، وانسخ أول رقمين.
+        </p>
         <div style="margin-top:16px; display:flex; gap:10px;">
           <button type="submit" class="btn btn-primary" id="submit-btn">إضافة العقار</button>
         </div>
@@ -157,7 +188,17 @@
   const logoutBtn = document.getElementById('logout-btn');
 
   const cityEl = document.getElementById('p-city');
+  const neighborhoodEl = document.getElementById('p-neighborhood');
   const typeEl = document.getElementById('p-type');
+  const statusEl = document.getElementById('p-status');
+  const periodEl = document.getElementById('p-period');
+  const priceEl = document.getElementById('p-price');
+  const areaEl = document.getElementById('p-area');
+  const roomsEl = document.getElementById('p-rooms');
+  const descriptionEl = document.getElementById('p-description');
+  const imageEl = document.getElementById('p-image');
+  const latEl = document.getElementById('p-lat');
+  const lngEl = document.getElementById('p-lng');
   const tbody = document.getElementById('properties-tbody');
   const tableCount = document.getElementById('table-count');
   const form = document.getElementById('property-form');
@@ -265,15 +306,23 @@
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     if (!currentUid) return;
+    const lat = latEl.value.trim();
+    const lng = lngEl.value.trim();
     const data = {
       title: document.getElementById('p-title').value.trim(),
       city: cityEl.value,
+      neighborhood: neighborhoodEl.value.trim(),
       type: typeEl.value,
-      status: document.getElementById('p-status').value,
-      price: Number(document.getElementById('p-price').value || 0),
-      area: Number(document.getElementById('p-area').value || 0),
-      rooms: Number(document.getElementById('p-rooms').value || 0),
+      status: statusEl.value,
+      rentPeriod: statusEl.value === 'rent' ? (periodEl.value || '') : '',
+      price: Number(priceEl.value || 0),
+      area: Number(areaEl.value || 0),
+      rooms: Number(roomsEl.value || 0),
       ownerId: currentUid,
+      description: descriptionEl.value.trim(),
+      imageUrl: imageEl.value.trim(),
+      lat: lat !== '' ? Number(lat) : null,
+      lng: lng !== '' ? Number(lng) : null,
     };
     if (!data.title || !data.city || !data.type) return;
 
@@ -305,11 +354,17 @@
       editIdEl.value = p.id;
       document.getElementById('p-title').value = p.title;
       cityEl.value = p.city;
+      neighborhoodEl.value = p.neighborhood || '';
       typeEl.value = p.type;
-      document.getElementById('p-status').value = p.status;
-      document.getElementById('p-price').value = p.price;
-      document.getElementById('p-area').value = p.area;
-      document.getElementById('p-rooms').value = p.rooms;
+      statusEl.value = p.status;
+      periodEl.value = p.rentPeriod || '';
+      priceEl.value = p.price;
+      areaEl.value = p.area;
+      roomsEl.value = p.rooms;
+      descriptionEl.value = p.description || '';
+      imageEl.value = p.imageUrl || '';
+      latEl.value = typeof p.lat === 'number' ? p.lat : '';
+      lngEl.value = typeof p.lng === 'number' ? p.lng : '';
       formTitle.textContent = 'تعديل العقار';
       submitBtn.textContent = 'حفظ التعديلات';
       cancelEditBtn.style.display = 'inline-block';
