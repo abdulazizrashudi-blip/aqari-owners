@@ -158,12 +158,12 @@
 </main>
 
 <footer class="site-footer">
-  <div><strong>عقاري</strong> — منصة عقارية</div>
+  <div><strong>عقاري</strong> — منصة عقارية</div> <div id="footer-contact" class="footer-contact"></div>
   <div>البيانات محفوظة على قاعدة بيانات حقيقية (Firebase)</div>
 </footer>
 
 <script src="app.js"></script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script type="module">
+<script type="module"> import { getContactInfo } from './firebase.js'; getContactInfo().then(c => renderFooterContact(document.getElementById('footer-contact'), c)).catch(() => {});
   import {
     watchAuth, loginOwner, logout, getOwner,
     getProperties, addProperty, updateProperty, deleteProperty, getOwners,
