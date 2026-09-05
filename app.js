@@ -153,7 +153,7 @@ function renderStats(container, stats) {
                         </div>`).join('');
 }
 
-function fillOptions(selectEl, values, placeholder) {
+/* قسم معلومات التواصل بالفوتر */ function renderFooterContact(el, contact) { if (!el || !contact) return; const links = []; if (contact.whatsapp) links.push(`<a href="${whatsappLink(contact.whatsapp, 'مرحبًا، أبي أستفسر عن خدماتكم العقارية')}" target="_blank" rel="noopener">💬 واتساب</a>`); if (contact.phone) links.push(`<a href="tel:${contact.phone.replace(/[^0-9+]/g, '')}">📞 ${contact.phone}</a>`); if (contact.instagram) links.push(`<a href="${contact.instagram}" target="_blank" rel="noopener">Instagram</a>`); if (contact.twitter) links.push(`<a href="${contact.twitter}" target="_blank" rel="noopener">X (Twitter)</a>`); if (contact.snapchat) links.push(`<a href="${contact.snapchat}" target="_blank" rel="noopener">Snapchat</a>`); el.innerHTML = links.join(' <span style="opacity:.45">•</span> '); } function fillOptions(selectEl, values, placeholder) {
     const opts = [`<option value="">${placeholder}</option>`]
       .concat(values.map(v => `<option value="${v}">${v}</option>`));
     selectEl.innerHTML = opts.join('');
